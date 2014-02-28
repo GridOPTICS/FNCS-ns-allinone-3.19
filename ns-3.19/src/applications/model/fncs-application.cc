@@ -213,7 +213,7 @@ void FNCSApplication::receiveFNCSMessages()
   
   while(this->in->hasMoreMessages()){
     sim_comm::Message *msg=this->in->getNextInboxMessage();
-    if(msg!=nullptr){
+    if(msg!=NULL){
       send(msg);
       delete msg;
     }

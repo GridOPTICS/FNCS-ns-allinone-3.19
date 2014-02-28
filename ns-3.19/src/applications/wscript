@@ -3,7 +3,6 @@
 def build(bld):
     module = bld.create_ns3_module('applications', ['internet', 'config-store','stats'])
 
-    module.env.append_value("CXXFLAGS", '-std=c++0x')
     module.source = [
         'model/bulk-send-application.cc',
         'model/onoff-application.cc',
