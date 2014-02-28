@@ -8,14 +8,14 @@ from waflib import Options
 def options(opt):
     opt.add_option('--with-zmq',
                    help=('Installation prefix for ZMQ'),
-                   dest='with_zmq', default=None)
+                   dest='with_zmq', default='/usr/local')
     opt.add_option('--disable-zmq',
                    help=('Disable ZMQ Integration'),
                    dest='disable_zmq', default=False, action="store_true")
 
     opt.add_option('--with-fncs',
                    help=('Installation prefix for FNCS'),
-                   dest='with_fncs', default=None)
+                   dest='with_fncs', default='/usr/local')
     opt.add_option('--disable-fncs',
                    help=('Disable FNCS Integration'),
                    dest='disable_fncs', default=False, action="store_true")
@@ -45,14 +45,13 @@ def configure(conf):
         conf.msg("Checking for ZMQ location", False)
         conf.report_optional_feature("zmq", "ZMQ Integration", False,
                                      "zmq not enabled (see option --with-zmq)")
-        # Add this module to the list of modules that won't be built
-        # if they are enabled.
-        conf.env['MODULES_NOT_BUILT'].append('fncs')
-        return
-    elif not conf.env['WITH_FNCS']:
+
+    if not conf.env['WITH_FNCS']:
         conf.msg("Checking for FNCS location", False)
         conf.report_optional_feature("fncs", "FNCS Integration", False,
                                      "fncs not enabled (see option --with-fncs)")
+
+    if not conf.env['WITH_ZMQ'] or not conf.env['WITH_FNCS']:
         # Add this module to the list of modules that won't be built
         # if they are enabled.
         conf.env['MODULES_NOT_BUILT'].append('fncs')
