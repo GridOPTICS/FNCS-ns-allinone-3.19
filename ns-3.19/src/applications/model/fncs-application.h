@@ -33,6 +33,7 @@ public:
   virtual ~FNCSApplication ();
   
   void setNameResolution(map<string,pair<Ipv4Address,uint16_t> >  &resolver);
+  void setMarketToNodeMap(map<string, string>  &marketMap);
   void setName(string given);
 protected:
   virtual void DoDispose (void);
@@ -52,6 +53,8 @@ private:
   sim_comm::ObjectCommInterface *in;
   bool notified;
   map<string,pair<Ipv4Address,uint16_t> > nodes;
+  map<string, string> marketToNodeMap;
+ 
  // map<string, Ptr<Socket> > nodeSockets;
   
   Ptr<Socket> udpsocket;

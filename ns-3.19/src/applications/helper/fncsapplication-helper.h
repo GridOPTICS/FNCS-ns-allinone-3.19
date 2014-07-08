@@ -21,6 +21,7 @@
 #ifndef FNCSHELPER_H
 #define FNCSHELPER_H
 
+#include <map>
 #include "ns3/node-list.h"
 #include "ns3/node.h"
 #include "ns3/object-factory.h"
@@ -32,6 +33,7 @@
 #include <ns3/node-container.h>
 #include "ns3/system-mutex.h"
 #include "integrator.h"
+
 
 using namespace std;
 
@@ -48,7 +50,7 @@ public:
     FNCSApplicationHelper();
     virtual ~FNCSApplicationHelper();
 
-    ApplicationContainer SetApps(vector<string> names,NodeContainer nodes);
+    ApplicationContainer SetApps(vector<string> names,NodeContainer nodes, map<string, string> &marketNodeMap);
     ApplicationContainer SetApps(vector<string> names);
     
    

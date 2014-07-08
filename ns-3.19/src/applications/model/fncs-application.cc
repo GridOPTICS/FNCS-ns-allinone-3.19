@@ -102,6 +102,11 @@ void FNCSApplication::setNameResolution(map< string, pair< Ipv4Address, uint16_t
   this->nodes = resolver;
 }
 
+void FNCSApplication::setMarketToNodeMap(map< string, string >& nameMap)
+{
+  this->marketToNodeMap = nameMap;
+}
+
 void FNCSApplication::StartApplication(void )
 {
   if(name.empty())
@@ -165,7 +170,8 @@ void FNCSApplication::send(sim_comm::Message* message)
   uint8_t *header;
   const uint8_t *data;
   uint32_t headerSize,dataSize;
-  
+  string destName, marketName, nodePrefix;
+
   data=message->getData();
   dataSize=message->getSize();
   message->serializeHeader(header,headerSize);
@@ -179,10 +185,19 @@ void FNCSApplication::send(sim_comm::Message* message)
     map<string, pair<Ipv4Address,uint16_t> >::iterator it=nodes.begin();
     
     for(;it!=nodes.end();++it){
-      Ptr<Packet> p=Create<Packet>(combined,headerSize+dataSize+sizeof(uint32_t));
-      pair<Ipv4Address, uint16_t> pR=it->second;
-      InetSocketAddress destInet(pR.first,pR.second);
-      this->udpsocket->SendTo(p,0,destInet);
+      destName = it->first;
+      marketName = message->getFrom();
+      if(marketToNodeMap.find(marketName) == marketToNodeMap.end()){
+    	 NS_FATAL_ERROR("FNCS App cannot find the market name in the marketToNodeMap");
+      }else{
+        nodePrefix = marketToNodeMap[marketName];
+        if(destName.find(nodePrefix) == 0){
+          Ptr<Packet> p=Create<Packet>(combined,headerSize+dataSize+sizeof(uint32_t));
+          pair<Ipv4Address, uint16_t> pR=it->second;
+          InetSocketAddress destInet(pR.first,pR.second);
+          this->udpsocket->SendTo(p,0,destInet);
+	}
+      }
     }
   }
   else{

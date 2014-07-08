@@ -48,15 +48,24 @@ FNCSApplicationHelper::~FNCSApplicationHelper(){
 
 
 
-ApplicationContainer FNCSApplicationHelper::SetApps(vector< string > names, NodeContainer nodes)
+ApplicationContainer FNCSApplicationHelper::SetApps(vector< string > names, NodeContainer nodes, map<string, string> &marketToNodeMap)
 {
   if(names.size()<nodes.GetN())
      NS_FATAL_ERROR("Not enough names to set fncs apps!");
+
+ /* nameMap is setting  names to ip addresses for all objects/nodes on the network */
   map< string, pair<Ipv4Address,uint16_t> > nameMap; 
   uint16_t port=1000;
   ApplicationContainer toReturn;
   vector<Ptr<FNCSApplication> > memkill;
   //Node 0 is the initiator.
+
+// create a vector of FNCSapplication objects
+// each FNCSapplication object conttains data about a node on the network.
+// the names and node information is passed to this method
+// this function is called by main() method which is located in 
+// contrib/inputs/firstN.cc
+
   for(uint32_t i=0;i<nodes.GetN();i++){
      if (nodes.Get(i)->GetNDevices()<2)
 	  NS_FATAL_ERROR("Nodes should be assigned IP addresses before calling SetGLDApps!!!");
@@ -67,9 +76,11 @@ ApplicationContainer FNCSApplicationHelper::SetApps(vector< string > names, Node
      nameMap.insert(pair<string, pair<Ipv4Address,uint16_t> >(names[i],pair<Ipv4Address,uint16_t>(nodeadd,port)));
      memkill.push_back(app);
   }
-  
+ 
+// initalizes the FNCS applicationCOntainer object  with all the objects on the network
   for(uint32_t i=0;i<nodes.GetN();i++){
     memkill[i]->setNameResolution(nameMap);
+    memkill[i]->setMarketToNodeMap(marketToNodeMap);
     toReturn.Add(memkill[i]);
     nodes.Get(i)->AddApplication(memkill[i]);
   }
