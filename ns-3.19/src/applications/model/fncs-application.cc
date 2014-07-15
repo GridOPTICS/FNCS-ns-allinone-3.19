@@ -155,6 +155,8 @@ void FNCSApplication::handleRead(Ptr< Socket > socket)
 	  sim_comm::Message *msg=new Message(&data[sizeof(uint32_t)],headerSize,&data[sizeof(uint32_t)+headerSize]);
 	  //here we need to arrange to part in bcast messages
 	  if(msg->isBroadCast()){
+    	   NS_LOG_INFO(this->name << "In handleRead() :Sending BCAST MEssage");
+	    
 	    sim_comm::Message *msg2=msg;
 	    msg=new Message(msg2->getFrom(),this->name,msg2->getTime(),msg2->getData(),msg2->getSize(),msg2->getTag());
 	    delete msg2;
@@ -181,22 +183,23 @@ void FNCSApplication::send(sim_comm::Message* message)
   memcpy(&combined[sizeof(uint32_t)],header,headerSize);
   memcpy(&combined[headerSize+sizeof(uint32_t)],data,dataSize);
   if(message->isBroadCast()){
-    NS_LOG_INFO(this->name << ":Sending BCAST MEssage");
+    NS_LOG_INFO(this->name << "In send()  :Sending BCAST MEssage");
     map<string, pair<Ipv4Address,uint16_t> >::iterator it=nodes.begin();
     
     for(;it!=nodes.end();++it){
       destName = it->first;
       marketName = message->getFrom();
       if(marketToNodeMap.find(marketName) == marketToNodeMap.end()){
-    	 NS_FATAL_ERROR("FNCS App cannot find the market name in the marketToNodeMap");
+    	 NS_LOG_INFO("FNCS App cannot find the market name in the marketToNodeMap");
       }else{
         nodePrefix = marketToNodeMap[marketName];
         if(destName.find(nodePrefix) == 0){
+	  NS_LOG_INFO("Found " << nodePrefix << " in " << destName << "\n");
           Ptr<Packet> p=Create<Packet>(combined,headerSize+dataSize+sizeof(uint32_t));
           pair<Ipv4Address, uint16_t> pR=it->second;
           InetSocketAddress destInet(pR.first,pR.second);
           this->udpsocket->SendTo(p,0,destInet);
-	}
+	} else { NS_LOG_INFO("Not Found " << nodePrefix << " in " << destName << "\n"); }
       }
     }
   }
@@ -205,8 +208,24 @@ void FNCSApplication::send(sim_comm::Message* message)
     
     if(it==nodes.end())
       NS_FATAL_ERROR(this->name << ":CANNOT FIND TO IN NAMES REGISTER!!! "<<message->getTo());
-    
-    NS_LOG_INFO(this->name << ":Sending t0 " << message->getTo());
+
+	// Introduce if statement that checks that messages from any glidlabd(markNIF) are sent only to relevant controllers in that market only
+	// if messages is from a MarkNIF object
+#if 1
+   if(marketToNodeMap.find(this->name) != marketToNodeMap.end()){
+	// check if message is going to any controller in any other market 
+	for(map<string, string>::iterator it= marketToNodeMap.begin(); it != marketToNodeMap.end(); it++) {
+          marketName = it->first;
+	  if(this->name != marketName && message->getTo().find(it->second) == 0){
+         	NS_LOG_INFO(this->name << " Aborted send t0 " << message->getTo() << endl);
+  	 	delete[] combined;
+  	 	delete[] header;
+	 	return;
+	  }
+	}
+   }
+#endif 
+   NS_LOG_INFO(this->name << ":Sending t0 " << message->getTo() << endl); //"data :" << data << endl);
   
     Ptr<Packet> p=Create<Packet>(combined,headerSize+dataSize+sizeof(uint32_t)); 
     pair<Ipv4Address, uint16_t> pR=it->second;
