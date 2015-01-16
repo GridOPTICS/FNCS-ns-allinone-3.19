@@ -105,7 +105,7 @@ int main()
         # if they are enabled.
         conf.env['MODULES_NOT_BUILT'].append('fncs')
 
-    conf.env['INCLUDES_FNCS'] = [os.path.abspath(os.path.join(conf.env['WITH_FNCS'],'include'))]
+    conf.env['INCLUDES_FNCS'] = [os.path.abspath(os.path.join(conf.env['WITH_FNCS'],'include','fncs'))]
     conf.env['LIB_FNCS'] = ['fncs']
     conf.env['DEFINES_FNCS'] = ['FNCS']
     conf.env['FNCS'] = conf.check_nonfatal(fragment=fncs_test_code, use='FNCS ZMQ',
